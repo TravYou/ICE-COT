@@ -27,7 +27,7 @@ class Example:
                  forward_two_hop_tests: list = [],
                  prev_storage_tests: list = []):
         self.fact = fact
-        self.making_up_tests = making_up_tests
+        self.making_up_tests = making_up_tests # list of testcase
         self.logical_constraints = logical_constraints
         self.subject_paraphrasing_tests = subject_paraphrasing_tests
         self.two_hop_tests = two_hop_tests
@@ -45,7 +45,52 @@ class Example:
             'Compositionality_II': [test.to_dict() for test in self.forward_two_hop_tests],
             'Forgetfulness': [test.to_dict() for test in self.prev_storage_tests],
         }
-
+    
+    def create_partial_dict(self, test_type):
+        test_dict = []
+        if test_type == 'Relation_Specificity':
+            test_dict = [test.to_dict() for test in self.making_up_tests]
+        elif test_type == 'Logical_Generalization':
+            test_dict = [test.to_dict() for test in self.logical_constraints]
+        elif test_type == 'Subject_Aliasing':
+            test_dict = [test.to_dict() for test in self.subject_paraphrasing_tests]
+        elif test_type == 'Compositionality_I':
+            test_dict = [test.to_dict() for test in self.two_hop_tests]
+        elif test_type == 'Compositionality_II':
+            test_dict = [test.to_dict() for test in self.forward_two_hop_tests]
+        elif test_type == 'Forgetfulness':
+            test_dict = [test.to_dict() for test in self.prev_storage_tests]
+        return {
+            'edit': self.fact.to_dict(),
+            test_type: test_dict
+        }
+    
+    @staticmethod
+    def lowercase_first_character(s):
+        if s:  # Check if the string is not empty
+            return s[0].lower() + s[1:]
+        return s  # Return the original string if it's empty
+    
+    def fetch_icl(self, test_type):
+        example_dict = self.create_partial_dict(test_type)
+        original_edit = self.lowercase_first_character(example_dict['edit']['prompt']) + '\n'
+        print('_____________________________')
+        # print(self.__str__())
+        icls = []
+        for testcase_dict in example_dict[test_type]:
+            for query_dict in testcase_dict['test_queries']:
+                if len(query_dict['answers']) == 0:
+                    print(query_dict['answers'])
+                    continue
+                res = f"{query_dict['prompt']} " + f"{query_dict['answers'][0]['value']}" + '.\n'
+                print(res)
+                icls.append('Imagine that ' + original_edit + res)
+        # print(original_edit)
+        # print([testcase.get_test_queries()[0].get_query_prompt() for testcase in self.making_up_tests])
+        # print([testcase.get_test_queries()[0].get_answers()[0] for testcase in self.making_up_tests])
+        # making_up = [original_edit + ' ' + testcase.get_test_queries()[0].get_query_prompt() + ' ' + testcase.get_test_queries()[0].get_answers()[0][0] + '\n' for testcase in self.making_up_tests]
+        return icls
+    
     # Create Example object directly from an object from json file
     @staticmethod
     def from_dict(d):

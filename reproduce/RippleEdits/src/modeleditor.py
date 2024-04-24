@@ -3,6 +3,7 @@ import os
 import torch
 
 from queryexecutor import QueryExecutor
+from in_context_selecter import InContextSelector
 
 
 class ModelEditor:
@@ -30,6 +31,23 @@ class InContextModelEditor(ModelEditor):
         context = 'Imagine that ' + fact.get_fact_phrased() + '\n'
         print(f'In Context Editing added context: {context}')
         self._query_executor.set_prompt_context(context)
+
+    def restore_model(self):
+        self._query_executor.set_prompt_context('')
+
+class CustomizedContextEditor(ModelEditor):
+
+    def __init__(self, query_executor: QueryExecutor, selector: InContextSelector):
+        super().__init__(query_executor)
+        self.selector = selector
+
+
+    def edit_model(self, fact):
+        icls = self.selector.get_icls(fact)
+        context = 'Imagine that ' + fact.get_fact_phrased() + '\n'
+        icls_plus_prompt = icls + context
+        print(f'In Context Editing added context: {icls_plus_prompt}')
+        self._query_executor.set_prompt_context(icls_plus_prompt)
 
     def restore_model(self):
         self._query_executor.set_prompt_context('')
