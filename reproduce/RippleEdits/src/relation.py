@@ -85,6 +85,7 @@ class Relation(Enum):
     def id(self):
         return self._relation_id
 
+    # Replace the <subject> in the phrase with the actual subject
     def phrase(self, subject):
         if isinstance(subject, list):
             if subject:

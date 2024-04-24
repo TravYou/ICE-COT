@@ -76,8 +76,10 @@ def wikidata_item_given_id(ent_id: str):
     except:
         return None
 
-
+# Give an object id (s or o), return its wikidata label
+# If encounter invalid id, invalid item/label returned by wikidata, return the label itself
 def get_label(ent_id: str):
+    # handle if it appears as a single element in list or empty list
     if isinstance(ent_id, list):
         if len(ent_id) > 0:
             ent_id = ent_id[0]
@@ -158,10 +160,10 @@ def ent_to_relation_ids(ent_id: str):
     return list(related_claims.keys())
 
 
-with zipfile.ZipFile('./wikidata/ent_label2id.json.zip', 'r') as zip_ref:
-    zip_ref.extractall('./wikidata/ent_label2id.json')
+with zipfile.ZipFile('./src/wikidata/ent_label2id.json.zip', 'r') as zip_ref:
+    zip_ref.extractall('./src/wikidata/ent_label2id.json')
 
-ent_label2id_dict = load_json('./wikidata/ent_label2id.json')
+ent_label2id_dict = load_json('./src/wikidata/ent_label2id.json/ent_label2id.json')
 
 
 def ent_label2id(label: str):

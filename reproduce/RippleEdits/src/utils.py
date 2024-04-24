@@ -1,7 +1,7 @@
 from wikidata.utils import get_label, get_aliases, write_to_csv
 import openai
-from openai_key.openai_key import my_openai_key
-openai.api_key = my_openai_key
+# from openai_key.openai_key import my_openai_key
+# openai.api_key = my_openai_key
 
 
 def create_test_example_given_input_targets(input_prompt: str, targets: list):

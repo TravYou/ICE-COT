@@ -45,6 +45,7 @@ class Query:
             'phrase': self._phrase,
         }
 
+    # Generate query from a single test
     @staticmethod
     def from_dict(d):
         subject_id = d['subject_id']

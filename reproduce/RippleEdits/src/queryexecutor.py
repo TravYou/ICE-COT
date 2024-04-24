@@ -2,7 +2,7 @@ import torch
 from transformers import AutoTokenizer, GPT2LMHeadModel, GPTJForCausalLM, GPTNeoXForCausalLM, LlamaForCausalLM
 from utils import call_openai, process_generation
 
-
+# tokenizer and model, context can be set
 class QueryExecutor:
 
     def __init__(self, model=None, tokenizer=None, device=None, send_to_device=True):
@@ -39,8 +39,10 @@ class QueryExecutor:
                 return False
         return True
 
+    # prompt is context (offered by in-context model editor) + phrase from query
     def execute_query(self, query, answer_length=30):
         prompt = self._prompt_context + query.get_query_prompt()
+        # generate text from model and get rid of the prompt
         model_answer = self._generate_text(prompt, len(prompt) + answer_length)
         model_answer = model_answer.replace(self._prompt_context, '', 1)
         print(f'query: {query.to_dict()}\nmodel answer: {model_answer}')

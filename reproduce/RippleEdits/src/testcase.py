@@ -1,4 +1,4 @@
-from src.query import Query
+from query import Query
 
 
 class TestCase:

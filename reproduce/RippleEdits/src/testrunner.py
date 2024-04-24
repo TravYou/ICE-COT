@@ -23,16 +23,17 @@ class TestRunner:
         self._query_executor = query_executor
         self._model_editor = model_editor
 
+    # Major function to run the tests cases given an example (they should correspond to each other)
     def run_testcases(self, example, test_cases, skip_edit=False, skip_restore=False, skip_preconditions=False):
-        example_result = ExampleResult.EXECUTED
-        test_results = {TestResult.NOT_EXECUTED: [], TestResult.PASSED: [], TestResult.FAILED: []}
+        example_result = ExampleResult.EXECUTED #! further reading
+        test_results = {TestResult.NOT_EXECUTED: [], TestResult.PASSED: [], TestResult.FAILED: []} #! further reading
 
         # Check testcase conditions
         if not skip_preconditions:
             for test_case in test_cases:
-                for condition_query in test_case.get_condition_queries():
+                for condition_query in test_case.get_condition_queries(): #! further reading
                     print('Executing condition query')
-                    if not self._query_executor.execute_query(condition_query):
+                    if not self._query_executor.execute_query(condition_query): #! further reading
                         test_results[TestResult.NOT_EXECUTED].append(test_case)
                         break
 

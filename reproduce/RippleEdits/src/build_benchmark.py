@@ -253,10 +253,10 @@ if __name__ == '__main__':
 
     fake_size = 2000
     fake_benchmark = construct_fake_dataset_based_on_sampled_buckets(
-        path='./generations/sampled_entities_divided_to_buckets_5000.json',
+        path='./src/generations/sampled_entities_divided_to_buckets_5000.json',
         limit=fake_size, facts_limit=15000, limit_num_of_facts=4, limit_subjects=100000
     )
-    fake_benchmark.to_file(f'./benchmark/final/fake_{fake_size}.json')
+    fake_benchmark.to_file(f'./data/benchmark/final/fake_{fake_size}.json')
 
 
 

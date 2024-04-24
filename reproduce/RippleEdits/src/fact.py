@@ -2,7 +2,7 @@ from relation import Relation
 from wikidata.utils import get_label
 from query import Query
 
-
+# Essentially a S, R, O pair
 class Fact:
 
     def __init__(self, subject_id, relation, target_id):
@@ -25,9 +25,13 @@ class Fact:
     def get_fact_prompt(self):
         return self._relation.phrase(get_label(self._subject_id))
 
+    # Essentially returning the complete prompt give subject, relation, and target
+    # It uses get_label to get wikidatalabel from id; use .phrase of relation to replace dummy <subject> with the actual label
     def get_fact_phrased(self):
         return self._relation.phrase(get_label(self._subject_id)) + f' {get_label(self._target_id)}.'
 
+    # Get dictionary of prompt, s, r, o
+    # Essentially returning itself as a dict with prompt
     def to_dict(self):
         return {
             'prompt': self.get_fact_phrased(),

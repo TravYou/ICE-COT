@@ -46,6 +46,7 @@ class Example:
             'Forgetfulness': [test.to_dict() for test in self.prev_storage_tests],
         }
 
+    # Create Example object directly from an object from json file
     @staticmethod
     def from_dict(d):
         fact = Fact.from_dict(d['edit'])
@@ -169,7 +170,9 @@ class Dataset:
         with p.open('w+', encoding='utf-8') as f:
             json.dump(d, f, ensure_ascii=False, indent=2)
 
-    @staticmethod
+    # given a json file, parse each sample in the json file, generate Example object from each sample,
+    # Use the list of Example object to generate a Dataset Object (with takes in exactly a list)
+    @staticmethod #note!
     def from_file(filename):
         with open(filename, 'r', encoding='utf-8') as f:
             examples = json.load(f)

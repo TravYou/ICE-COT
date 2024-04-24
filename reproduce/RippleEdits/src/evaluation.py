@@ -8,7 +8,8 @@ from testrunner import ExampleResult
 from testrunner import TestRunner, TestResult
 from wikidata.utils import write_json
 
-
+# Biggest Class for Evaluation
+# Return Variables: test success rate, execution rate, # of tests, if original edit succeeds
 class Evaluator:
 
     def __init__(self, query_executor, model_editor):
@@ -16,10 +17,12 @@ class Evaluator:
         self._model_editor = model_editor
         self._test_runner = TestRunner(query_executor, model_editor)
 
+    # Major function for calculating the editting accuracy for a certain example's certain type of test
     def average_acc(self, example: Example, test_cases: list, skip_edit: bool = False, skip_restore: bool = False):
         if not len(test_cases) and skip_edit:
             return 0.0, 0.0, 0.0, False
 
+        # Run the tests with the run_testcases
         run_res = self._test_runner.run_testcases(example, test_cases, skip_edit=skip_edit, skip_restore=skip_restore)
         fact_edit_succeeded, res_dict = run_res
         edit_succeeded = True
@@ -29,6 +32,7 @@ class Evaluator:
         if not len(test_cases):
             return 0.0, 0.0, 0.0, edit_succeeded
 
+        # Calculate the return variables
         werent_executed = len(res_dict[TestResult.NOT_EXECUTED])
         successes = len(res_dict[TestResult.PASSED])
         fails = len(res_dict[TestResult.FAILED])
@@ -53,6 +57,7 @@ class Evaluator:
     def evaluate_prev_storage_tests(self, example: Example):
         return self.average_acc(example, example.prev_storage_tests)
 
+    # Run all tests on a single example
     def evaluate(self, example: Example):
         res = defaultdict()
         res[TestsAxis.MAKING_UP] = self.evaluate_making_up_axis(example)
@@ -73,23 +78,23 @@ class ConditionsEvaluator(Evaluator):
 if __name__ == '__main__':
     models = [
         'gpt2-medium',
-        'gpt2-large',
-        'gpt2-xl',
-        'gpt-j',
-        'gpt-neo',
-        'llama'
+        # 'gpt2-large',
+        # 'gpt2-xl',
+        # 'gpt-j',
+        # 'gpt-neo',
+        # 'llama'
     ]
 
     editors = [
-        'mend',
-        'rome',
-        'memit',
+        # 'mend',
+        # 'rome',
+        # 'memit',
         'in-context'
     ]
 
-    recently_modified_path = '../data/benchmark/recent.json'
-    fake_facts_path = '../data/benchmark/random.json'
-    top_views_path = '../data/benchmark/popular.json'
+    recently_modified_path = './data/benchmark/recent.json'
+    fake_facts_path = './data/benchmark/random.json'
+    top_views_path = './data/benchmark/popular.json'
 
     datasets = [
         recently_modified_path,
@@ -134,12 +139,14 @@ if __name__ == '__main__':
                 if editor == 'in-context':
                     model_editor = InContextModelEditor(query_executor)
 
+                # Initialize Dataset and Evaluator
                 evaluator = Evaluator(query_executor=query_executor, model_editor=model_editor)
                 dataset = Dataset.from_file(dataset_path)
 
                 precisions_json = dict()
                 num_of_examples = 200
 
+                # Sample examples to test
                 examples_for_eval = dataset.sample(num_of_examples)
                 eval_size = len(examples_for_eval)
 
@@ -153,7 +160,7 @@ if __name__ == '__main__':
                 for i, example in enumerate(examples_for_eval):
                     if (i + 1) % 10 == 0:
                         print(f'{i + 1}/{eval_size}')
-
+                    # skip if fact has no subject or object
                     if example.fact.get_subject_label() == '' or example.fact.get_target_label() == '':
                         print(f'Skipping example: {example.to_dict()}')
                         continue
@@ -203,7 +210,7 @@ if __name__ == '__main__':
                     print(f'Average total number of tests is {average_size[axis]}')
                     res_str += f'Average total number of tests is {average_size[axis]}\n'
 
-                write_json(precisions_json, f'./{experiment_name}_res_2.json')
+                write_json(precisions_json       , f'./{experiment_name}_res_2.json')
 
                 with open(f'./{experiment_name}_2.txt', 'w+', encoding='utf-8') as f:
                     f.write(res_str)
