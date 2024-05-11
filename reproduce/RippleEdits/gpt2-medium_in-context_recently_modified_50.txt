@@ -1,0 +1,30 @@
+Results of axis TestsAxis.MAKING_UP:
+16.0 successful edits (out of 50)
+Average accuracy is 0.625
+Average portion of executed_tests is 0.375
+Average total number of tests is 3.5
+Results of axis TestsAxis.LOGICAL_CONSTRAINTS:
+20.0 successful edits (out of 50)
+Average accuracy is 0.1
+Average portion of executed_tests is 0.8833333333333334
+Average total number of tests is 1.5
+Results of axis TestsAxis.SUBJECT_PARAPHRASING:
+8.0 successful edits (out of 50)
+Average accuracy is 1.0
+Average portion of executed_tests is 0.875
+Average total number of tests is 1.25
+Results of axis TestsAxis.TWO_HOP:
+14.000000000000002 successful edits (out of 50)
+Average accuracy is 0.5714285714285714
+Average portion of executed_tests is 0.23029827315541598
+Average total number of tests is 15.857142857142858
+Results of axis TestsAxis.FORWARD_TWO_HOP:
+2.0 successful edits (out of 50)
+Average accuracy is 1.0
+Average portion of executed_tests is 1.0
+Average total number of tests is 1.0
+Results of axis TestsAxis.PREVIOUS_STORAGE:
+44.0 successful edits (out of 50)
+Average accuracy is 1.0
+Average portion of executed_tests is 1.0
+Average total number of tests is 1.0
