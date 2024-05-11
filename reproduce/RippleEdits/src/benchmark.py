@@ -5,6 +5,7 @@ from pathlib import Path
 
 from fact import Fact
 from testcase import TestCase
+from relation import Relation
 
 
 class TestsAxis(Enum):
@@ -71,6 +72,7 @@ class Example:
             return s[0].lower() + s[1:]
         return s  # Return the original string if it's empty
     
+
     def fetch_icl(self, test_type):
         example_dict = self.create_partial_dict(test_type)
         original_edit = self.lowercase_first_character(example_dict['edit']['prompt']) + '\n'
@@ -91,6 +93,27 @@ class Example:
         # making_up = [original_edit + ' ' + testcase.get_test_queries()[0].get_query_prompt() + ' ' + testcase.get_test_queries()[0].get_answers()[0][0] + '\n' for testcase in self.making_up_tests]
         return icls
     
+    def fetch_cot_icls(self, test_type):
+        # assert(test_type == 'Compositionality_I' or test_type == 'Compositionality_II')
+        example_dict = self.create_partial_dict(test_type)
+        original_edit = self.lowercase_first_character(example_dict['edit']['prompt']) + '\n'
+        iclcot = []
+        for testcase_dict in example_dict[test_type]:
+            for query_dict in testcase_dict['test_queries']:
+                if len(query_dict['answers']) == 0:
+                    print(query_dict['answers'])
+                    continue
+                reasoning_fact = None
+                if test_type == 'Compositionality_I':
+                    reasoning_fact = Fact(query_dict['target_ids'][0], Relation[query_dict['second_relation']], query_dict['second_hop_target_ids'])
+                elif test_type == 'Compositionality_II':
+                    reasoning_fact = Fact(query_dict['subject_id'], Relation[query_dict['relation']], query_dict['target_ids'][0])
+                reasoning = '' if reasoning_fact == None else reasoning_fact.get_fact_phrased() + '\n'
+                res = f"{query_dict['prompt']} " + f"{query_dict['answers'][0]['value']}" + '.\n'
+                print(res)
+                iclcot.append('Imagine that ' + original_edit + reasoning + res)
+        return iclcot
+
     # Create Example object directly from an object from json file
     @staticmethod
     def from_dict(d):

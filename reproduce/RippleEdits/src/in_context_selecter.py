@@ -26,6 +26,22 @@ class InContextSelector:
                 print('Terminated')
                 break
         return desired_set
+    
+    def select_random_CoT_icls(self, k, type):
+        print(f'_________________{type}___________________')
+        samples = self.dataset.examples
+        desired_set = []
+        for sample in samples:
+            icls = sample.fetch_cot_icls(type)
+            if len(icls) != 0:
+                idx = random.randint(0, len(icls)-1)
+                desired_set.append(icls[idx])
+                print(icls[idx])
+            if len(desired_set) >= k:
+                print('Terminated')
+                break
+        return desired_set
+        # raise NotImplementedError
 
     @staticmethod
     def ks_todict(ks):
@@ -41,6 +57,9 @@ class InContextSelector:
             for key in typedict:
                 result.extend(icl for icl in self.select_random_noCoT_icls(typedict[key], key))
         # add more selection method and CoT option here
+        if self.selection_method == 'random' and self.CoT:
+            for key in typedict:
+                result.extend(icl for icl in self.select_random_CoT_icls(typedict[key], key))
         if shuffle:
             random.shuffle(result)
         return result

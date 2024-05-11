@@ -90,18 +90,18 @@ if __name__ == '__main__':
         # 'mend',
         # 'rome',
         # 'memit',
-        # 'in-context',
+        'in-context',
         'simple_icl'
     ]
 
     recently_modified_path = './data/benchmark/recent.json'
-    fake_facts_path = './data/benchmark/random.json'
-    top_views_path = './data/benchmark/popular.json'
+    # fake_facts_path = './data/benchmark/random.json'
+    # top_views_path = './data/benchmark/popular.json'
 
     datasets = [
         recently_modified_path,
-        fake_facts_path,
-        top_views_path
+        # fake_facts_path,
+        # top_views_path
     ]
 
     for model in models:
@@ -110,10 +110,10 @@ if __name__ == '__main__':
 
                 if dataset_path == recently_modified_path:
                     dataset_name = 'recently_modified'
-                if dataset_path == fake_facts_path:
-                    dataset_name = 'fake_facts'
-                if dataset_path == top_views_path:
-                    dataset_name = 'top_views'
+                # if dataset_path == fake_facts_path:
+                #     dataset_name = 'fake_facts'
+                # if dataset_path == top_views_path:
+                #     dataset_name = 'top_views'
   
 
                 experiment_name = f'{model}_{editor}_{dataset_name}'
@@ -126,7 +126,7 @@ if __name__ == '__main__':
                     query_executor = GPT2QueryExecutor('medium')
                 if model == 'gpt2-large':
                     query_executor = GPT2QueryExecutor('large')
-                if model == 'gpt2-xl':
+                if model == 'gpt2-xl': 
                     query_executor = GPT2QueryExecutor('xl')
                 if model == 'gpt-j':
                     query_executor = GPTJQueryExecutor()
@@ -145,14 +145,14 @@ if __name__ == '__main__':
                     model_editor = InContextModelEditor(query_executor)
                 if editor == 'simple_icl':
                     selector = InContextSelector(dataset)
-                    selector.set_constant_icls([2,2,2,2,2,2])
+                    selector.set_constant_icls([1,1,1,1,1,1])
                     model_editor = CustomizedContextEditor(query_executor, selector)
 
                 # Initialize Dataset and Evaluator
                 evaluator = Evaluator(query_executor=query_executor, model_editor=model_editor)
 
                 precisions_json = dict()
-                num_of_examples = 20
+                num_of_examples = 50
 
                 # Sample examples to test
                 examples_for_eval = dataset.sample(num_of_examples)
@@ -220,5 +220,5 @@ if __name__ == '__main__':
 
                 write_json(precisions_json       , f'./{experiment_name}_res_2.json')
 
-                with open(f'./{experiment_name}_2.txt', 'w+', encoding='utf-8') as f:
+                with open(f'./{experiment_name}_{num_of_examples}.txt', 'w+', encoding='utf-8') as f:
                     f.write(res_str)

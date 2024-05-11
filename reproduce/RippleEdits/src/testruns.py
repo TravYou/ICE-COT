@@ -16,7 +16,7 @@ if __name__ == "__main__":
     random.seed(2)
     dataset_path = './data/benchmark/popular.json'
     dataset = Dataset.from_file(dataset_path)
-    selector = InContextSelector(dataset)
+    selector = InContextSelector(dataset, CoT=True)
     icls_needed = [2, 2, 2, 2, 2, 2]
     selection = selector.select_icls(icls_needed, shuffle = False)
     for sentence in selection:
