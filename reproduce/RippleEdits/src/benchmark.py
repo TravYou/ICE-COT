@@ -75,7 +75,7 @@ class Example:
 
     def fetch_icl(self, test_type):
         example_dict = self.create_partial_dict(test_type)
-        original_edit = self.lowercase_first_character(example_dict['edit']['prompt']) + '\n'
+        original_edit = example_dict['edit']['prompt']
         print('_____________________________')
         # print(self.__str__())
         icls = []
@@ -84,9 +84,10 @@ class Example:
                 if len(query_dict['answers']) == 0:
                     print(query_dict['answers'])
                     continue
-                res = f"{query_dict['prompt']} " + f"{query_dict['answers'][0]['value']}" + '.\n'
-                print(res)
-                icls.append('Imagine that ' + original_edit + res)
+                question = f"{query_dict['prompt']} {{answer}}."
+                answer = f"{query_dict['answers'][0]['value']}"
+                res = f"New Fact: {original_edit}\nQuestion: {question}\nAnswer: {answer}\n"
+                icls.append(res)
         # print(original_edit)
         # print([testcase.get_test_queries()[0].get_query_prompt() for testcase in self.making_up_tests])
         # print([testcase.get_test_queries()[0].get_answers()[0] for testcase in self.making_up_tests])
@@ -96,22 +97,28 @@ class Example:
     def fetch_cot_icls(self, test_type):
         # assert(test_type == 'Compositionality_I' or test_type == 'Compositionality_II')
         example_dict = self.create_partial_dict(test_type)
-        original_edit = self.lowercase_first_character(example_dict['edit']['prompt']) + '\n'
+        original_edit = example_dict['edit']['prompt']
         iclcot = []
         for testcase_dict in example_dict[test_type]:
             for query_dict in testcase_dict['test_queries']:
                 if len(query_dict['answers']) == 0:
                     print(query_dict['answers'])
                     continue
-                reasoning_fact = None
+                reasoning = None
                 if test_type == 'Compositionality_I':
                     reasoning_fact = Fact(query_dict['target_ids'][0], Relation[query_dict['second_relation']], query_dict['second_hop_target_ids'])
+                    reasoning = f"{original_edit} {reasoning_fact.get_fact_phrased()}"
                 elif test_type == 'Compositionality_II':
                     reasoning_fact = Fact(query_dict['subject_id'], Relation[query_dict['relation']], query_dict['target_ids'][0])
-                reasoning = '' if reasoning_fact == None else reasoning_fact.get_fact_phrased() + '\n'
-                res = f"{query_dict['prompt']} " + f"{query_dict['answers'][0]['value']}" + '.\n'
+                    reasoning = f"{reasoning_fact.get_fact_phrased()} {original_edit}"
+                question = f"{query_dict['prompt']} {{answer}}."
+                answer = f"{query_dict['answers'][0]['value']}"
+                if reasoning != None:
+                    res = f"New Fact: {original_edit}\nQuestion: {question}\nReasoning: {reasoning}\nAnswer: {answer}\n"
+                else:
+                    res = f"New Fact: {original_edit}\nQuestion: {question}\nAnswer: {answer}\n"
                 print(res)
-                iclcot.append('Imagine that ' + original_edit + reasoning + res)
+                iclcot.append(res)
         return iclcot
 
     # Create Example object directly from an object from json file
@@ -228,8 +235,8 @@ class Dataset:
     def __init__(self, examples: list):
         self.examples = examples
 
-    def sample(self, k: int):
-        return random.sample(self.examples, min(k, len(self.examples)))
+    def sample(self, k: int, start = None, end = None):
+        return random.sample(self.examples[start:end], min(k, len(self.examples)))
 
     def to_file(self, filename):
         p = Path(filename)

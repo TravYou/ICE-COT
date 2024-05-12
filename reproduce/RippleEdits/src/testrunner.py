@@ -55,7 +55,7 @@ class TestRunner:
             self._model_editor.edit_model(example.fact)
 
         # Test edit
-        if not self._query_executor.execute_query(example.fact.get_fact_query()):
+        if not self._query_executor.execute_test_query(example.fact.get_fact_query()):
             example_result = ExampleResult.EDIT_FAILED
 
         # Test modified model
@@ -64,7 +64,7 @@ class TestRunner:
                 test_case_results = []
                 for test_query in test_case.get_test_queries():
                     print('Executing test query')
-                    test_case_results.append(self._query_executor.execute_query(test_query))
+                    test_case_results.append(self._query_executor.execute_test_query(test_query))
                 if test_case.get_test_condition() == TestCase.OR_TEST_CONDITION and True in test_case_results:
                     test_results[TestResult.PASSED].append(test_case)
                 elif test_case.get_test_condition() == TestCase.AND_TEST_CONDITION and False not in test_case_results:

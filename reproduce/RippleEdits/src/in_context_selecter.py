@@ -1,13 +1,17 @@
 import torch
 from benchmark import Dataset
 import random
+from sentence_transformers import SentenceTransformer
 
 class InContextSelector:
 
     def __init__(self, dataset: Dataset, selection_method = 'random', CoT = False):
+        self.model = SentenceTransformer('all-MiniLM-L6-v2')
         self.dataset = dataset
         self.selection_method = selection_method
         self.CoT = CoT
+        self.icls = []
+        self.icls_embedding = []
         self.icl_context = ''
 
     # type can be: 'Relation_Specificity'; 'Logical_Generalization'; 'Subject_Aliasing'; 'Compositionality_I';
@@ -65,8 +69,16 @@ class InContextSelector:
         return result
     
     def set_constant_icls(self, ks, shuffle = True):
-        icls = self.select_icls(ks, shuffle)
-        self.icl_context = "".join(icls)
+        self.icls = self.select_icls(ks, shuffle)
+        self.icl_context = "\n".join(self.icls)
+
+    def set_icls_embedding(self, ks):
+        self.icls = self.select_icls(ks)
+        self.icls_embedding = self.model.encode(self.icls)
+
+    def search_similar_icls(self, question, topk = 6):
+        question_embed = self.model.encode(question)
+        
 
     def get_icls(self, fact):
         return self.icl_context

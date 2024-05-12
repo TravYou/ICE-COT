@@ -8,6 +8,7 @@ from queryexecutor import GPT2QueryExecutor, GPT3QueryExecutor, GPTJQueryExecuto
 from testrunner import ExampleResult
 from testrunner import TestRunner, TestResult
 from wikidata.utils import write_json
+import random
 
 # Biggest Class for Evaluation
 # Return Variables: test success rate, execution rate, # of tests, if original edit succeeds
@@ -77,11 +78,12 @@ class ConditionsEvaluator(Evaluator):
 
 
 if __name__ == '__main__':
+    random.seed(0)
     models = [
-        'gpt2-medium',
+        # 'gpt2-medium',
         # 'gpt2-large',
         # 'gpt2-xl',
-        # 'gpt-j',
+        'gpt-j',
         # 'gpt-neo',
         # 'llama'
     ]
@@ -91,35 +93,36 @@ if __name__ == '__main__':
         # 'rome',
         # 'memit',
         'in-context',
-        'simple_icl'
+        # 'simple_icl',
+        # 'cot_icl'
     ]
 
-    recently_modified_path = './data/benchmark/recent.json'
+    # recently_modified_path = './data/benchmark/recent.json'
     # fake_facts_path = './data/benchmark/random.json'
-    # top_views_path = './data/benchmark/popular.json'
+    top_views_path = './data/benchmark/popular.json'
 
     datasets = [
-        recently_modified_path,
+        # recently_modified_path,
         # fake_facts_path,
-        # top_views_path
+        top_views_path
     ]
-
-    for model in models:
-        for editor in editors:
-            for dataset_path in datasets:
-
-                if dataset_path == recently_modified_path:
-                    dataset_name = 'recently_modified'
-                # if dataset_path == fake_facts_path:
-                #     dataset_name = 'fake_facts'
-                # if dataset_path == top_views_path:
-                #     dataset_name = 'top_views'
-  
-
+    for dataset_path in datasets:
+        # if dataset_path == recently_modified_path:
+        #     dataset_name = 'recently_modified'
+        # if dataset_path == fake_facts_path:
+        #     dataset_name = 'fake_facts'
+        if dataset_path == top_views_path:
+            dataset_name = 'top_views'
+        dataset = Dataset.from_file(dataset_path)
+        num_of_examples = 50
+        examples_for_eval = dataset.sample(num_of_examples, start = 100)
+        eval_size = len(examples_for_eval)
+        
+        for model in models:
+            for editor in editors:
                 experiment_name = f'{model}_{editor}_{dataset_name}'
                 print(experiment_name)
                 # load dataset
-                dataset = Dataset.from_file(dataset_path)
 
                 davinvci_query_executor = GPT3QueryExecutor(model_size='text-davinci-003')
                 if model == 'gpt2-medium':
@@ -147,16 +150,16 @@ if __name__ == '__main__':
                     selector = InContextSelector(dataset)
                     selector.set_constant_icls([1,1,1,1,1,1])
                     model_editor = CustomizedContextEditor(query_executor, selector)
+                if editor == 'cot_icl':
+                    selector = InContextSelector(dataset, CoT = True)
+                    selector.set_constant_icls([1,1,1,1,1,1])
+                    model_editor = CustomizedContextEditor(query_executor, selector)
+
 
                 # Initialize Dataset and Evaluator
                 evaluator = Evaluator(query_executor=query_executor, model_editor=model_editor)
 
                 precisions_json = dict()
-                num_of_examples = 50
-
-                # Sample examples to test
-                examples_for_eval = dataset.sample(num_of_examples)
-                eval_size = len(examples_for_eval)
 
                 succeeded_edits = defaultdict(lambda: 0)
                 average_precision = defaultdict(lambda: 0)
@@ -218,7 +221,7 @@ if __name__ == '__main__':
                     print(f'Average total number of tests is {average_size[axis]}')
                     res_str += f'Average total number of tests is {average_size[axis]}\n'
 
-                write_json(precisions_json       , f'./{experiment_name}_res_2.json')
+                write_json(precisions_json, f'./{experiment_name}_sbth.json')
 
-                with open(f'./{experiment_name}_{num_of_examples}.txt', 'w+', encoding='utf-8') as f:
+                with open(f'./{experiment_name}_{num_of_examples}_sbth.txt', 'w+', encoding='utf-8') as f:
                     f.write(res_str)

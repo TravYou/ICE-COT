@@ -40,10 +40,20 @@ class QueryExecutor:
         return True
 
     # prompt is context (offered by in-context model editor) + phrase from query
-    def execute_query(self, query, answer_length=30):
+    def execute_query(self, query, answer_length=100):
         prompt = self._prompt_context + query.get_query_prompt()
         # generate text from model and get rid of the prompt
-        model_answer = self._generate_text(prompt, len(prompt) + answer_length)
+        model_answer = self._generate_text(prompt, len(self._tokenizer.encode(prompt, return_tensors='pt')[0]) + answer_length)
+        model_answer = model_answer.replace(self._prompt_context, '', 1)
+        print(f'query: {query.to_dict()}\nmodel answer: {model_answer}')
+        return self._verify_answer(model_answer, query.get_answers())
+
+            # prompt is context (offered by in-context model editor) + phrase from query
+    def execute_test_query(self, query, answer_length=100):
+        # prompt = self._prompt_context + '\nQuestion: ' + query.get_query_prompt() + f" {{answer}}.\n"
+        prompt = self._prompt_context + query.get_query_prompt()
+        # generate text from model and get rid of the prompt
+        model_answer = self._generate_text(prompt, len(self._tokenizer.encode(prompt, return_tensors='pt')[0]) + answer_length)
         model_answer = model_answer.replace(self._prompt_context, '', 1)
         print(f'query: {query.to_dict()}\nmodel answer: {model_answer}')
         return self._verify_answer(model_answer, query.get_answers())
@@ -92,6 +102,8 @@ class GPTJQueryExecutor(HFQueryExecutor):
             tokenizer = AutoTokenizer.from_pretrained('EleutherAI/gpt-j-6B')
             tokenizer.pad_token = tokenizer.eos_token
         if model is None:
+            print('loadingmodel')
+            torch.cuda.empty_cache()
             model = GPTJForCausalLM.from_pretrained('EleutherAI/gpt-j-6B', pad_token_id=tokenizer.eos_token_id)
         super().__init__(model, tokenizer, device)
 
@@ -107,7 +119,7 @@ class GPTNeoXQueryExecutor(HFQueryExecutor):
             tokenizer.pad_token = tokenizer.eos_token
         if model is None:
             model = GPTNeoXForCausalLM.from_pretrained('EleutherAI/gpt-neox-20b', device_map="auto", offload_folder="offload", offload_state_dict=True, pad_token_id=tokenizer.eos_token_id)
-        super().__init__(model, tokenizer, device, send_to_device=False)
+        super().__init__(model, tokenizer, device)
 
     def get_model_name(self):
         return 'EleutherAI_gpt-neox-20b'
@@ -122,7 +134,8 @@ class LlamaQueryExecutor(HFQueryExecutor):
             tokenizer = AutoTokenizer.from_pretrained(f'huggyllama/{self._model_name}', use_fast=False, add_bos_token=False)
             tokenizer.pad_token = tokenizer.eos_token
         if model is None:
-            model = LlamaForCausalLM.from_pretrained(f'huggyllama/{self._model_name}', device_map="auto", offload_folder="offload", offload_state_dict=True)
+            print('start loading')
+            model = LlamaForCausalLM.from_pretrained(f'huggyllama/{self._model_name}', device_map="cuda", offload_folder="offload", offload_state_dict=True)
         super().__init__(model, tokenizer, device, send_to_device=False)
 
     def get_model_name(self):
