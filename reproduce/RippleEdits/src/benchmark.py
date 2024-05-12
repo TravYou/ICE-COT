@@ -117,7 +117,6 @@ class Example:
                     res = f"New Fact: {original_edit}\nQuestion: {question}\nReasoning: {reasoning}\nAnswer: {answer}\n"
                 else:
                     res = f"New Fact: {original_edit}\nQuestion: {question}\nAnswer: {answer}\n"
-                print(res)
                 iclcot.append(res)
         return iclcot
 
@@ -252,3 +251,17 @@ class Dataset:
         with open(filename, 'r', encoding='utf-8') as f:
             examples = json.load(f)
         return Dataset([Example.from_dict(example) for example in examples])
+    
+    def __getitem__(self, index):
+    # Handle slicing or specific index
+        if isinstance(index, slice):
+            # Return a new Dataset instance of sliced data
+            return Dataset(self.examples[index])
+        elif isinstance(index, int):
+            # Return a specific element from examples
+            return self.examples[index]
+        else:
+            raise TypeError("Invalid argument type.")
+
+    def __len__(self):
+        return len(self.examples)

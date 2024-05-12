@@ -82,8 +82,8 @@ if __name__ == '__main__':
     models = [
         # 'gpt2-medium',
         # 'gpt2-large',
-        # 'gpt2-xl',
-        'gpt-j',
+        'gpt2-xl',
+        # 'gpt-j',
         # 'gpt-neo',
         # 'llama'
     ]
@@ -92,9 +92,10 @@ if __name__ == '__main__':
         # 'mend',
         # 'rome',
         # 'memit',
-        'in-context',
+        # 'in-context',
         # 'simple_icl',
-        # 'cot_icl'
+        # 'cot_icl',
+        'kNN_coticl'
     ]
 
     # recently_modified_path = './data/benchmark/recent.json'
@@ -114,7 +115,7 @@ if __name__ == '__main__':
         if dataset_path == top_views_path:
             dataset_name = 'top_views'
         dataset = Dataset.from_file(dataset_path)
-        num_of_examples = 50
+        num_of_examples = 100
         examples_for_eval = dataset.sample(num_of_examples, start = 100)
         eval_size = len(examples_for_eval)
         
@@ -153,6 +154,11 @@ if __name__ == '__main__':
                 if editor == 'cot_icl':
                     selector = InContextSelector(dataset, CoT = True)
                     selector.set_constant_icls([1,1,1,1,1,1])
+                    model_editor = CustomizedContextEditor(query_executor, selector)
+                if editor == 'kNN_coticl':
+                    selector = InContextSelector(dataset, CoT = True)
+                    selector.set_icls_embedding([int('inf'),int('inf'),int('inf'),int('inf'),int('inf'),int('inf')])
+                    selector.set_num_icls(6)
                     model_editor = CustomizedContextEditor(query_executor, selector)
 
 
