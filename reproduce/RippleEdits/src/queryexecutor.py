@@ -50,8 +50,8 @@ class QueryExecutor:
 
             # prompt is context (offered by in-context model editor) + phrase from query
     def execute_test_query(self, query, answer_length=100):
-        # prompt = self._prompt_context + '\nQuestion: ' + query.get_query_prompt() + f" {{answer}}.\n"
-        prompt = self._prompt_context + query.get_query_prompt()
+        prompt = self._prompt_context + '\nQuestion: ' + query.get_query_prompt() + f" {{answer}}.\n"
+        # prompt = self._prompt_context + query.get_query_prompt()
         # generate text from model and get rid of the prompt
         model_answer = self._generate_text(prompt, len(self._tokenizer.encode(prompt, return_tensors='pt')[0]) + answer_length)
         model_answer = model_answer.replace(self._prompt_context, '', 1)
@@ -75,7 +75,7 @@ class HFQueryExecutor(QueryExecutor):
 
     def _generate_text(self, prompt, length):
         inputs = self._tokenizer.encode(prompt, return_tensors='pt').to(self._device)
-        outputs = self._model.generate(inputs, temperature=0, max_length=length)
+        outputs = self._model.generate(inputs, max_length=length)
         return self._tokenizer.decode(outputs[0], skip_special_tokens=True)
 
 
@@ -104,7 +104,9 @@ class GPTJQueryExecutor(HFQueryExecutor):
         if model is None:
             print('loadingmodel')
             torch.cuda.empty_cache()
-            model = GPTJForCausalLM.from_pretrained('EleutherAI/gpt-j-6B', pad_token_id=tokenizer.eos_token_id)
+            model = GPTJForCausalLM.from_pretrained('EleutherAI/gpt-j-6B', pad_token_id=tokenizer.eos_token_id
+                                                    ,low_cpu_mem_usage = True)
+            print('done loading model')
         super().__init__(model, tokenizer, device)
 
     def get_model_name(self):

@@ -1,7 +1,7 @@
 import torch
 from benchmark import Dataset
 import random
-from sentence_transformers import SentenceTransformer
+from sentence_transformers import SentenceTransformer, util
 
 class InContextSelector:
 
@@ -10,6 +10,7 @@ class InContextSelector:
         self.dataset = dataset
         self.selection_method = selection_method
         self.CoT = CoT
+        self.num_icls = 0
         self.icls = []
         self.icls_embedding = []
         self.icl_context = ''
@@ -57,11 +58,11 @@ class InContextSelector:
     def select_icls(self, ks, shuffle = True):
         typedict = self.ks_todict(ks)
         result = []
-        if self.selection_method == 'random' and not self.CoT:
+        if not self.CoT:
             for key in typedict:
                 result.extend(icl for icl in self.select_random_noCoT_icls(typedict[key], key))
         # add more selection method and CoT option here
-        if self.selection_method == 'random' and self.CoT:
+        if self.CoT:
             for key in typedict:
                 result.extend(icl for icl in self.select_random_CoT_icls(typedict[key], key))
         if shuffle:
@@ -78,7 +79,15 @@ class InContextSelector:
 
     def search_similar_icls(self, question, topk = 6):
         question_embed = self.model.encode(question)
+        hits = util.semantic_search(question_embed, self.icls_embedding, score_function=util.dot_score, top_k=topk)
+        idx = [i['corpus_id'] for i in hits[0]]
+        return "\n".join([self.icls[i] for i in idx])
         
 
-    def get_icls(self, fact):
+    def set_num_icls(self, num_icls):
+        self.num_icls = num_icls
+
+    def get_icls(self, question):
+        if self.selection_method == 'kNN':
+            self.icl_context = self.search_similar_icls(question, self.num_icls)
         return self.icl_context
